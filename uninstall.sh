@@ -69,6 +69,12 @@ remove_binary() {
     else
         error "Failed to remove binary. Do you have write permissions to $INSTALL_DIR?"
     fi
+
+    # Remove datarobot alias if present
+    if [ -e "$INSTALL_DIR/datarobot" ] || [ -L "$INSTALL_DIR/datarobot" ]; then
+        rm -f "$INSTALL_DIR/datarobot"
+        printf "   ${GREEN}✓${NC} 'datarobot' alias removed\n"
+    fi
 }
 
 # Remove PATH entries from shell profiles
@@ -121,10 +127,12 @@ remove_from_path() {
 remove_completions() {
     local removed=0
 
-    # Zsh completions
+    # Zsh completions (primary binary and aliases)
     local zsh_locations="
         $HOME/.oh-my-zsh/custom/completions/_$BINARY_NAME
         $HOME/.zsh/completions/_$BINARY_NAME
+        $HOME/.oh-my-zsh/custom/completions/_datarobot
+        $HOME/.zsh/completions/_datarobot
     "
 
     for location in $zsh_locations; do
@@ -158,13 +166,19 @@ remove_completions() {
         fi
     done
 
-    # Fish completions
-    local fish_completion="$HOME/.config/fish/completions/$BINARY_NAME.fish"
-    if [ -f "$fish_completion" ]; then
-        rm -f "$fish_completion"
-        step "Removed Fish completion from $fish_completion"
-        removed=1
-    fi
+    # Fish completions (primary binary and aliases)
+    local fish_locations="
+        $HOME/.config/fish/completions/$BINARY_NAME.fish
+        $HOME/.config/fish/completions/datarobot.fish
+    "
+
+    for location in $fish_locations; do
+        if [ -f "$location" ]; then
+            rm -f "$location"
+            step "Removed Fish completion from $location"
+            removed=1
+        fi
+    done
 
     if [ $removed -eq 0 ]; then
         step "No shell completions found"

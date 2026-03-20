@@ -65,11 +65,11 @@ jobs:
         with:
           go-version: ${{ inputs.go-version }}
 
-      - name: Build the DR CLI Binary
-        run: task build
-
-      - name: Move the Binary
-        run: sudo mv ./dist/dr /usr/local/bin/dr
+      - name: Build and Install the DR CLI Binary
+        run: |
+          task build
+          LOCAL_BINARY=./dist/dr sh install.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Run Smoke Tests for Binary
         env:

@@ -44,7 +44,7 @@ func RunE(cmd *cobra.Command, args []string) error { //nolint: cyclop
 	}
 
 	if url != "" {
-		err := config.SaveURLToConfig(url)
+		err := config.SetURLToConfig(url)
 		if err != nil {
 			log.Error(err.Error())
 		}

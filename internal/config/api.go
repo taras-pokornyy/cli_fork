@@ -82,6 +82,8 @@ func RedactedReqInfo(req *http.Request) string {
 	return string(requestDump)
 }
 
+// TODO: I believe we want to delete this function as there is SetURLToConfig function
+// But it is used in cmd/templates/setup/model.go
 func SaveURLToConfig(newURL string) error {
 	newURL, err := SchemeHostOnly(urlFromShortcut(newURL))
 	if err != nil {
@@ -104,6 +106,20 @@ func SaveURLToConfig(newURL string) error {
 	viper.Set(DataRobotURL, newURL+"/api/v2")
 
 	return viper.WriteConfig()
+}
+
+// SetURLToConfig is a helper function that sets the DataRobot URL with the "/api/v2" suffix in the config object.
+// It is used by both cmd/auth/set-url and cmd/auth/login to ensure consistent URL formatting.
+// It does NOT write to the config file, in order not to break drconfig.yaml file once URL is not valid or some issues with API key.
+func SetURLToConfig(newURL string) error {
+	newURL, err := SchemeHostOnly(urlFromShortcut(newURL))
+	if err != nil {
+		return err
+	}
+
+	viper.Set(DataRobotURL, newURL+"/api/v2")
+
+	return nil
 }
 
 func urlFromShortcut(selectedOption string) string {

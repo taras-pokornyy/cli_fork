@@ -260,6 +260,7 @@ func WriteConfigFileSilent() error {
 	if err := config.CreateConfigFileDirIfNotExists(); err != nil {
 		return err
 	}
+
 	err := viper.WriteConfig()
 	if err != nil {
 		log.Error(err)
@@ -335,10 +336,8 @@ func SetURLAction() bool {
 
 				break
 			}
-			// TODO: I believe we want to change this message to "Thank you for providing the URL. Please wait while we validate it and retrieve your API key."
-			// Or just delete it since this action does not mean that URL is written to file or configured until API key is valid.
-			// And we don't want to confuse users .
-			fmt.Println("Environment URL configured successfully!")
+
+			fmt.Println("Thank you for providing the URL. Validating it and retrieving your API key...")
 
 			return true
 		}

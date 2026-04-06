@@ -25,6 +25,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+const DRAPIURLSuffix = "/api/v2"
+
 var ErrInvalidURL = errors.New("Invalid URL.")
 
 // SchemeHostOnly takes a URL like: https://app.datarobot.com/api/v2 and just
@@ -103,12 +105,12 @@ func SaveURLToConfig(newURL string) error {
 		return viper.WriteConfig()
 	}
 
-	viper.Set(DataRobotURL, newURL+"/api/v2")
+	viper.Set(DataRobotURL, newURL+DRAPIURLSuffix)
 
 	return viper.WriteConfig()
 }
 
-// SetURLToConfig is a helper function that sets the DataRobot URL with the "/api/v2" suffix in the config object.
+// SetURLToConfig is a helper function that sets the DataRobot URL with the DRAPIURLSuffix in the config object.
 // It is used by both cmd/auth/set-url and cmd/auth/login to ensure consistent URL formatting.
 // It does NOT write to the config file, in order not to break drconfig.yaml file once URL is not valid or some issues with API key.
 func SetURLToConfig(newURL string) error {
@@ -117,7 +119,7 @@ func SetURLToConfig(newURL string) error {
 		return err
 	}
 
-	viper.Set(DataRobotURL, newURL+"/api/v2")
+	viper.Set(DataRobotURL, newURL+DRAPIURLSuffix)
 
 	return nil
 }

@@ -262,7 +262,6 @@ func WriteConfigFileSilent() error {
 	}
 
 	err := viper.WriteConfig()
-
 	if err != nil {
 		log.Error(err)
 		return err

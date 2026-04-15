@@ -209,6 +209,6 @@ tasks:
     cmds:
       - echo "Updating copyright year from {{.FROM_YEAR}} to {{.TO_YEAR}}"
       - |
-        find cmd internal testutils tools main.go \
+        find cmd internal main.go \
           -type f -name "*.go" \
           -exec sed -i '' 's/Copyright {{.FROM_YEAR}} DataRobot/Copyright {{.TO_YEAR}} DataRobot/g' {} +

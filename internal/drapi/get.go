@@ -21,8 +21,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/charmbracelet/log"
 	"github.com/datarobot/cli/internal/config"
+	"github.com/datarobot/cli/internal/log"
 )
 
 var token string
@@ -45,6 +45,10 @@ func Get(url, info string) (*http.Response, error) {
 
 	req.Header.Add("Authorization", "Bearer "+token)
 	req.Header.Add("User-Agent", config.GetUserAgentHeader())
+
+	if config.IsAPIConsumerTrackingEnabled() {
+		req.Header.Add("X-DataRobot-Api-Consumer-Trace", config.GetAPIConsumerTrace())
+	}
 
 	if info != "" {
 		log.Infof("Fetching %s from: %s", info, url)

@@ -90,6 +90,8 @@ using pre-built templates. Get from idea to production in minutes, not hours.
 		// Store telemetry client in context for use by commands
 		cmd.SetContext(context.WithValue(cmd.Context(), telemetryClientKey{}, client))
 
+		config.SetAPIConsumerTrace(config.CommandPathToTrace(cmd.CommandPath()))
+
 		return nil
 	},
 	PersistentPostRunE: func(cmd *cobra.Command, _ []string) error {
@@ -210,6 +212,13 @@ func initializeConfig(cmd *cobra.Command) error {
 	viper.SetDefault("external-editor", "vi")
 
 	_ = viper.BindEnv("external-editor", "VISUAL", "EDITOR")
+
+	// API consumer tracking is enabled by default.
+	// Set DATAROBOT_API_CONSUMER_TRACKING_ENABLED=false to opt out,
+	// matching the Python SDK convention.
+	viper.SetDefault(config.APIConsumerTrackingEnabled, true)
+
+	_ = viper.BindEnv(config.APIConsumerTrackingEnabled, "DATAROBOT_API_CONSUMER_TRACKING_ENABLED")
 
 	// If DATAROBOT_CLI_CONFIG is set and no explicit --config flag was provided,
 	// use the environment variable value

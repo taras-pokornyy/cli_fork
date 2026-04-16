@@ -200,15 +200,21 @@ tasks:
 
   copyright-year:
     silent: true
+    platforms: [linux, darwin]
     desc: "Update copyright year in all source files to the current year"
     vars:
       TO_YEAR:
         sh: date +%Y
       FROM_YEAR:
         sh: echo $(($(date +%Y) - 1))
+      FIND_GO_FILES: "find cmd internal main.go -type f -name '*.go'"
+      SED_EXPR: "s/Copyright {{.FROM_YEAR}} DataRobot/Copyright {{.TO_YEAR}} DataRobot/g"
+      COUNT:
+        sh: "{{.FIND_GO_FILES}} -exec grep -l 'Copyright {{.FROM_YEAR}} DataRobot' {} + 2>/dev/null | wc -l | tr -d ' '"
     cmds:
       - echo "Updating copyright year from {{.FROM_YEAR}} to {{.TO_YEAR}}"
-      - |
-        find cmd internal main.go \
-          -type f -name "*.go" \
-          -exec sed -i '' 's/Copyright {{.FROM_YEAR}} DataRobot/Copyright {{.TO_YEAR}} DataRobot/g' {} +
+      - platforms: [darwin]
+        cmd: "{{.FIND_GO_FILES}} -exec sed -i '' '{{.SED_EXPR}}' {} +"
+      - platforms: [linux]
+        cmd: "{{.FIND_GO_FILES}} -exec sed -i '{{.SED_EXPR}}' {} +"
+      - echo "{{.COUNT}} files were updated!"

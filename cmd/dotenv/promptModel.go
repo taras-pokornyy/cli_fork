@@ -15,8 +15,11 @@
 package dotenv
 
 import (
+	"errors"
 	"fmt"
 	"io"
+	"net"
+	"net/http"
 	"slices"
 	"strings"
 
@@ -45,6 +48,13 @@ var (
 
 const (
 	cursorStyle = '•'
+
+	errMsgPrefix         = "😞 Unable to retrieve the list of available LLMs.\n\n"
+	errMsgAuthFailed     = "🔐 Authentication failed. Please check your credentials and try again."
+	errMsgNotFound       = "🔍 Requested resource not found. Please contact support for assistance."
+	errMsgTimeout        = "⏳ Request timed out. Please check your network connection and try again."
+	errMsgNoLLMs         = "🤷 No available LLMs found. Please contact support for assistance."
+	errMsgContactSupport = "👥 Please try again or contact support if the issue persists."
 )
 
 type item envbuilder.PromptOption
@@ -184,19 +194,35 @@ func newLLMListPrompt(prompt envbuilder.UserPrompt, successCmd tea.Cmd) (promptM
 	if err != nil {
 		log.Errorf("Error retrieving LLMs: %s", err.Error())
 
-		errPrompt := prompt
-		errPrompt.Type = "llmgw_error"
-		helpMsg := "😞 Unable to retrieve the list of available LLMs.\n\n"
+		var (
+			netErr     net.Error
+			httpErr    *drapi.HTTPError
+			StatusCode int
+		)
 
-		if strings.Contains(err.Error(), "Unauthorized") {
-			helpMsg += "🔐 Authentication failed. Please check your credentials and try again."
-		} else if strings.Contains(err.Error(), "Not Found") {
-			helpMsg += "🔍 Requested resource not found. Please contact support for assistance."
-		} else if strings.Contains(err.Error(), "Timeout") {
-			helpMsg += "⏳ Request timed out. Please check your network connection and try again."
-		} else {
-			helpMsg += fmt.Sprintf("%s\n\n👥 Please try again or contact support if the issue persists.", err.Error())
+		helpMsg := errMsgPrefix
+
+		// Check if the error is a network timeout or an HTTP error to provide more specific feedback
+		// Treat net.Error.Timeout() as an HTTP 408 Request Timeout for user-friendly messaging
+		if errors.As(err, &netErr) && netErr.Timeout() {
+			StatusCode = http.StatusRequestTimeout
+		} else if errors.As(err, &httpErr) {
+			StatusCode = httpErr.StatusCode
 		}
+
+		switch StatusCode {
+		case http.StatusUnauthorized, http.StatusForbidden:
+			helpMsg += errMsgAuthFailed
+		case http.StatusNotFound:
+			helpMsg += errMsgNotFound
+		case http.StatusRequestTimeout, http.StatusGatewayTimeout:
+			helpMsg += errMsgTimeout
+		default:
+			helpMsg += err.Error() + "\n\n" + errMsgContactSupport
+		}
+
+		errPrompt := prompt
+		errPrompt.Type = "error"
 
 		errPrompt.Help = helpMsg
 
@@ -207,8 +233,8 @@ func newLLMListPrompt(prompt envbuilder.UserPrompt, successCmd tea.Cmd) (promptM
 		log.Warn("No active LLMs found in the catalog")
 
 		errPrompt := prompt
-		errPrompt.Type = "llmgw_error"
-		errPrompt.Help = "😞 No available LLMs found. Please contact support for assistance."
+		errPrompt.Type = "error"
+		errPrompt.Help = errMsgNoLLMs
 
 		return promptModel{prompt: errPrompt, successCmd: successCmd}, nil
 	}
@@ -331,7 +357,8 @@ func (pm promptModel) View() string {
 	sb.Write([]byte(tui.SubTitleStyle.Render(fmt.Sprintf("Variable: %v", pm.prompt.Env))))
 	sb.WriteString("\n\n")
 
-	if strings.Contains(pm.prompt.Type.String(), "error") {
+	// if strings.Contains(pm.prompt.Type.String(), "error") {
+	if pm.prompt.Type.String() == "error" {
 		sb.WriteString(tui.ErrorStyle.Render(pm.prompt.Help))
 	} else {
 		sb.WriteString(tui.BaseTextStyle.Render(pm.prompt.Help))
@@ -351,7 +378,7 @@ func (pm promptModel) View() string {
 		if pm.prompt.Multiple {
 			sb.WriteString(tui.DimStyle.Render("space to toggle • enter to answer • "))
 		}
-	} else if strings.Contains(pm.prompt.Type.String(), "error") {
+	} else if pm.prompt.Type.String() == "error" {
 		sb.WriteString("\n\n")
 	} else {
 		sb.WriteString(pm.input.View())

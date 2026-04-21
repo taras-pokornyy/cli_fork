@@ -102,7 +102,7 @@ func TestNewLLMListPrompt_Unauthorized(t *testing.T) {
 	pm, cmd := newLLMListPrompt(prompt, nil)
 
 	assert.Nil(t, cmd)
-	assert.True(t, strings.Contains(pm.prompt.Type.String(), "error"))
+	assert.Contains(t, pm.prompt.Type.String(), "error")
 	assert.Contains(t, pm.prompt.Help, "Authentication failed")
 }
 
@@ -116,7 +116,7 @@ func TestNewLLMListPrompt_NotFound(t *testing.T) {
 	pm, cmd := newLLMListPrompt(prompt, nil)
 
 	assert.Nil(t, cmd)
-	assert.True(t, strings.Contains(pm.prompt.Type.String(), "error"))
+	assert.Contains(t, pm.prompt.Type.String(), "error")
 	assert.Contains(t, pm.prompt.Help, "Requested resource not found")
 }
 
@@ -132,7 +132,7 @@ func TestNewLLMListPrompt_Timeout(t *testing.T) {
 	pm, cmd := newLLMListPrompt(prompt, nil)
 
 	assert.Nil(t, cmd)
-	assert.True(t, strings.Contains(pm.prompt.Type.String(), "error"))
+	assert.Contains(t, pm.prompt.Type.String(), "error")
 	assert.Contains(t, pm.prompt.Help, "Request timed out")
 }
 
@@ -148,7 +148,7 @@ func TestNewLLMListPrompt_EmptyLLMs(t *testing.T) {
 	pm, cmd := newLLMListPrompt(prompt, nil)
 
 	assert.Nil(t, cmd)
-	assert.True(t, strings.Contains(pm.prompt.Type.String(), "error"))
+	assert.Contains(t, pm.prompt.Type.String(), "error")
 	assert.Contains(t, pm.prompt.Help, "No available LLMs")
 }
 
@@ -167,7 +167,7 @@ func TestNewLLMListPrompt_Success(t *testing.T) {
 
 	pm, _ := newLLMListPrompt(prompt, nil)
 
-	require.False(t, strings.Contains(pm.prompt.Type.String(), "error"))
+	require.NotContains(t, pm.prompt.Type.String(), "error")
 	assert.Len(t, pm.list.Items(), 2)
 }
 

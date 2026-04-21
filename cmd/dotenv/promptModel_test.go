@@ -176,7 +176,7 @@ func TestNewLLMListPrompt_Success(t *testing.T) {
 func TestPromptModelView_ErrorType(t *testing.T) {
 	pm := promptModel{
 		prompt: envbuilder.UserPrompt{
-			Type: "llmgw_error",
+			Type: "error",
 			Env:  "MY_VAR",
 			Help: "Unable to retrieve LLMs.",
 		},

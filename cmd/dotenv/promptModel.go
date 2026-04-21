@@ -357,7 +357,6 @@ func (pm promptModel) View() string {
 	sb.Write([]byte(tui.SubTitleStyle.Render(fmt.Sprintf("Variable: %v", pm.prompt.Env))))
 	sb.WriteString("\n\n")
 
-	// if strings.Contains(pm.prompt.Type.String(), "error") {
 	if pm.prompt.Type.String() == "error" {
 		sb.WriteString(tui.ErrorStyle.Render(pm.prompt.Help))
 	} else {

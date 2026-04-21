@@ -194,6 +194,8 @@ func newLLMListPrompt(prompt envbuilder.UserPrompt, successCmd tea.Cmd) (promptM
 			helpMsg += "🔍 Requested resource not found. Please contact support for assistance."
 		} else if strings.Contains(err.Error(), "Timeout") {
 			helpMsg += "⏳ Request timed out. Please check your network connection and try again."
+		} else {
+			helpMsg += fmt.Sprintf("%s\n\n👥 Please try again or contact support if the issue persists.", err.Error())
 		}
 
 		errPrompt.Help = helpMsg

@@ -49,6 +49,7 @@ var (
 const (
 	cursorStyle = '•'
 
+	typeError			 = "error"
 	errMsgPrefix         = "😞 Unable to retrieve the list of available LLMs.\n\n"
 	errMsgAuthFailed     = "🔐 Authentication failed. Please check your credentials and try again."
 	errMsgNotFound       = "🔍 Requested resource not found. Please contact support for assistance."
@@ -197,7 +198,7 @@ func newLLMListPrompt(prompt envbuilder.UserPrompt, successCmd tea.Cmd) (promptM
 		var (
 			netErr     net.Error
 			httpErr    *drapi.HTTPError
-			StatusCode int
+			statusCode int
 		)
 
 		helpMsg := errMsgPrefix
@@ -205,12 +206,12 @@ func newLLMListPrompt(prompt envbuilder.UserPrompt, successCmd tea.Cmd) (promptM
 		// Check if the error is a network timeout or an HTTP error to provide more specific feedback
 		// Treat net.Error.Timeout() as an HTTP 408 Request Timeout for user-friendly messaging
 		if errors.As(err, &netErr) && netErr.Timeout() {
-			StatusCode = http.StatusRequestTimeout
+			statusCode = http.StatusRequestTimeout
 		} else if errors.As(err, &httpErr) {
-			StatusCode = httpErr.StatusCode
+			statusCode = httpErr.StatusCode
 		}
 
-		switch StatusCode {
+		switch statusCode {
 		case http.StatusUnauthorized, http.StatusForbidden:
 			helpMsg += errMsgAuthFailed
 		case http.StatusNotFound:
@@ -222,7 +223,7 @@ func newLLMListPrompt(prompt envbuilder.UserPrompt, successCmd tea.Cmd) (promptM
 		}
 
 		errPrompt := prompt
-		errPrompt.Type = "error"
+		errPrompt.Type = typeError
 
 		errPrompt.Help = helpMsg
 
@@ -233,7 +234,7 @@ func newLLMListPrompt(prompt envbuilder.UserPrompt, successCmd tea.Cmd) (promptM
 		log.Warn("No active LLMs found in the catalog")
 
 		errPrompt := prompt
-		errPrompt.Type = "error"
+		errPrompt.Type = typeError
 		errPrompt.Help = errMsgNoLLMs
 
 		return promptModel{prompt: errPrompt, successCmd: successCmd}, nil
@@ -377,7 +378,7 @@ func (pm promptModel) View() string {
 		if pm.prompt.Multiple {
 			sb.WriteString(tui.DimStyle.Render("space to toggle • enter to answer • "))
 		}
-	} else if pm.prompt.Type.String() == "error" {
+	} else if pm.prompt.Type.String() == typeError {
 		sb.WriteString("\n\n")
 	} else {
 		sb.WriteString(pm.input.View())

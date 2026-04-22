@@ -29,10 +29,12 @@ import (
 // Callers can extract the status code with errors.As to make decisions without string matching.
 type HTTPError struct {
 	StatusCode int
+	URL        string
 }
 
+// Error implements the error interface for HTTPError.
 func (e *HTTPError) Error() string {
-	return fmt.Sprintf("HTTP error: %d %s", e.StatusCode, http.StatusText(e.StatusCode))
+	return fmt.Sprintf("HTTP error: %d %s (url: %s)", e.StatusCode, http.StatusText(e.StatusCode), e.URL)
 }
 
 var token string

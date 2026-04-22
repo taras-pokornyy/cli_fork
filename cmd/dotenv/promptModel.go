@@ -49,7 +49,7 @@ var (
 const (
 	cursorStyle = '•'
 
-	typeError			 = "error"
+	typeError            = "error"
 	errMsgPrefix         = "😞 Unable to retrieve the list of available LLMs.\n\n"
 	errMsgAuthFailed     = "🔐 Authentication failed. Please check your credentials and try again."
 	errMsgNotFound       = "🔍 Requested resource not found. Please contact support for assistance."
@@ -358,7 +358,7 @@ func (pm promptModel) View() string {
 	sb.Write([]byte(tui.SubTitleStyle.Render(fmt.Sprintf("Variable: %v", pm.prompt.Env))))
 	sb.WriteString("\n\n")
 
-	if pm.prompt.Type.String() == "error" {
+	if pm.prompt.Type.String() == typeError {
 		sb.WriteString(tui.ErrorStyle.Render(pm.prompt.Help))
 	} else {
 		sb.WriteString(tui.BaseTextStyle.Render(pm.prompt.Help))

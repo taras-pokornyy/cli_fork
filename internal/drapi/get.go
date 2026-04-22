@@ -80,7 +80,7 @@ func Get(url, info string) (*http.Response, error) {
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
 
-		return nil, &HTTPError{StatusCode: resp.StatusCode}
+		return nil, &HTTPError{StatusCode: resp.StatusCode, URL: url}
 	}
 
 	return resp, err
